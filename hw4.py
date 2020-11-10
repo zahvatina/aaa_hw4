@@ -33,46 +33,44 @@ class CountVectorizer:
         return list(self.vocab)
 
 
-def tf_transform(count_matrix: list) -> list:
-    """
-    :param count_matrix: list of list[int]
-    :return: list of list[float]
-    """
-
-    return [
-        [count_row[i] / sum(count_row) for i in range(len(count_row))]
-        for count_row in count_matrix
-    ]
-
-
-def idf_transform(count_matrix: list) -> list:
-    """
-    :param count_matrix: list of list[int]
-    :return: list of float
-    """
-    sh0 = len(count_matrix)
-    if sh0 == 0:
-        return []
-    sh1 = len(count_matrix[0])
-    words_docs = [
-        sum([count_matrix[i][j] > 0 for i in range(sh0)]) for j in range(sh1)
-    ]
-    return [log((sh0 + 1) / (words_docs[i] + 1)) + 1 for i in range(sh1)]
-
-
 class TfidfTransformer:
     def fit_transform(self, count_matrix: list) -> list:
         """
         :param count_matrix: list of list[int]
         :return: list of list[float]
         """
-        tf = tf_transform(count_matrix)
-        idf = idf_transform(count_matrix)
+        tf = self.tf_transform(count_matrix)
+        idf = self.idf_transform(count_matrix)
         sh0 = len(tf)
         if sh0 == 0:
             return []
         sh1 = len(tf[0])
         return [[tf[i][j] * idf[j] for j in range(sh1)] for i in range(sh0)]
+    
+    def tf_transform(self, count_matrix: list) -> list:
+        """
+        :param count_matrix: list of list[int]
+        :return: list of list[float]
+        """
+        return [
+            [count_row[i] / sum(count_row) for i in range(len(count_row))]
+            for count_row in count_matrix
+        ]
+
+
+    def idf_transform(self, count_matrix: list) -> list:
+        """
+        :param count_matrix: list of list[int]
+        :return: list of float
+        """
+        sh0 = len(count_matrix)
+        if sh0 == 0:
+            return []
+        sh1 = len(count_matrix[0])
+        words_docs = [
+            sum([count_matrix[i][j] > 0 for i in range(sh0)]) for j in range(sh1)
+        ]
+        return [log((sh0 + 1) / (words_docs[i] + 1)) + 1 for i in range(sh1)]
 
 
 class TfidfVectorizer(CountVectorizer):
